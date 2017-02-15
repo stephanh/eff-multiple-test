@@ -1,0 +1,13 @@
+target/
+project/project/
+.history
+.cache
+metastore_db
+derby.log
+.idea
+.idea_modules
+.ensime
+.ensime_cache
+ci/
+ci-env-vars.sh
+.drone.sec.yml
