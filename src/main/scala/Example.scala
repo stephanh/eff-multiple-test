@@ -21,9 +21,3 @@ object Example4 {
     CombinedInterpreter.run4
   }
 }
-
-object Example5 {
-  def main(args: Array[String]): Unit = {
-    CombinedInterpreter.run5
-  }
-}
