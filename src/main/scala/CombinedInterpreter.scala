@@ -78,12 +78,9 @@ object CombinedInterpreter {
 
   }
 
-  type Initial = Fx.fx5[Toy1, Toy2, Toy3, Option, WriterLog]
   type Stack = Fx.fx12[CmdWriter, Toy1Writer, Toy2Writer, Toy3Writer, StateToy1, StateToy2, StateToy3, Toy1, Toy2, Toy3, WriterLog, Option]
-  def run[A](effects: Eff[Initial, A]): (Option[A], List[Cmd]) = {
-    val a = effects.into[Stack]
-
-    a
+  def run[A](effects: Eff[Stack, A]): (Option[A], List[Cmd]) = {
+    effects
       .runToy1
       .runWriterToy1
       .runToy2
