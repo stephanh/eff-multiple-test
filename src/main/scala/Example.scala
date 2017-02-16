@@ -1,14 +1,29 @@
-import CombinedInterpreter.Stack
-
-object Example {
+object Example1 {
   def main(args: Array[String]): Unit = {
-    val x = for {
-      _ <- Toy3.doing[Stack]("3a")
-      _ <- Toy3.doing[Stack]("3b")
-      _ <- Toy2.doing[Stack]("2a")
-      _ <- Toy1.doing[Stack]("1a")
-    } yield ()
+    CombinedInterpreter.run1
+  }
+}
 
-    CombinedInterpreter.run(x)
+object Example2 {
+  def main(args: Array[String]): Unit = {
+    CombinedInterpreter.run2
+  }
+}
+
+object Example3 {
+  def main(args: Array[String]): Unit = {
+    CombinedInterpreter.run3
+  }
+}
+
+object Example4 {
+  def main(args: Array[String]): Unit = {
+    CombinedInterpreter.run4
+  }
+}
+
+object Example5 {
+  def main(args: Array[String]): Unit = {
+    CombinedInterpreter.run5
   }
 }
