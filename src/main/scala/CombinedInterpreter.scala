@@ -1,4 +1,4 @@
-import cats.data.Writer
+import cats.data.{Writer, State}
 import cats.implicits._
 
 import org.atnos.eff.{Eff, Fx, Member, |=, Translate}
@@ -15,8 +15,18 @@ case class Toy1Cmd(c: Toy1[Any]) extends Cmd
 case class Toy2Cmd(c: Toy2[Any]) extends Cmd
 case class Toy3Cmd(c: Toy3[Any]) extends Cmd
 
+case class Log(s: String)
+
+case class ToyState(i: Int)
+
 object CombinedInterpreter {
   type CmdWriter[A] = Writer[Cmd, A]
+
+  type WriterLog[A] = Writer[Log, A]
+  type StateToy1[A] = State[Map[String, Any], A]
+  type StateToy2[A] = State[Map[String, String], A]
+  type StateToy3[A] = State[ToyState, A]
+
 
   implicit class Ops[R, A](effects: Eff[R, A]) {
     def runWriterToy1[U](implicit
@@ -52,7 +62,8 @@ object CombinedInterpreter {
 
     def runToy1[U](implicit
       m: Member.Aux[Toy1, R, U],
-      writer: _toy1Writer[U]
+      writer: _toy1Writer[U],
+      option: _option[U]
     ): Eff[U, A] = Toy1Interpreter.runToy1(effects)
 
     def runToy2[U](implicit
@@ -67,16 +78,24 @@ object CombinedInterpreter {
 
   }
 
-  type Stack = Fx.fx7[Toy1, Toy1Writer, Toy2, Toy2Writer, Toy3, Toy3Writer, CmdWriter]
-  def run[A](effects: Eff[Stack, A]): (A, List[Cmd]) = {
-    effects
+  type Initial = Fx.fx5[Toy1, Toy2, Toy3, Option, WriterLog]
+  type Stack = Fx.fx12[CmdWriter, Toy1Writer, Toy2Writer, Toy3Writer, StateToy1, StateToy2, StateToy3, Toy1, Toy2, Toy3, WriterLog, Option]
+  def run[A](effects: Eff[Initial, A]): (Option[A], List[Cmd]) = {
+    val a = effects.into[Stack]
+
+    a
       .runToy1
       .runWriterToy1
-      .runToy3
-      .runWriterToy3
       .runToy2
       .runWriterToy2
+      .runToy3
+      .runWriterToy3
+      .runOption
+      .evalState(Map.empty[String, Any])
+      .evalState(Map.empty[String, String])
+      .evalState(ToyState(2))
       .runWriter[Cmd]
+      .runWriterNoLog[Log]
       .run
   }
 }
