@@ -9,7 +9,6 @@ object Example {
       _ <- Toy1.doing[Stack]("1a")
     } yield ()
 
-    val (a, cmds) = CombinedInterpreter.run(x)
-    println(cmds.mkString("\n"))
+    CombinedInterpreter.run(x)
   }
 }

@@ -10,18 +10,11 @@ import Toy1Interpreter.{Toy1Writer, _toy1Writer}
 import Toy2Interpreter.{Toy2Writer, _toy2Writer}
 import Toy3Interpreter.{Toy3Writer, _toy3Writer}
 
-sealed trait Cmd
-case class Toy1Cmd(c: Toy1[Any]) extends Cmd
-case class Toy2Cmd(c: Toy2[Any]) extends Cmd
-case class Toy3Cmd(c: Toy3[Any]) extends Cmd
-
 case class Log(s: String)
 
 case class ToyState(i: Int)
 
 object CombinedInterpreter {
-  type CmdWriter[A] = Writer[Cmd, A]
-
   type WriterLog[A] = Writer[Log, A]
   type StateToy1[A] = State[Map[String, Any], A]
   type StateToy2[A] = State[Map[String, String], A]
@@ -29,37 +22,6 @@ object CombinedInterpreter {
 
 
   implicit class Ops[R, A](effects: Eff[R, A]) {
-    def runWriterToy1[U](implicit
-      m: Member.Aux[Toy1Writer, R, U],
-      writer: CmdWriter |= U
-    ): Eff[U, A] = translate(effects)(new Translate[Toy1Writer, U] {
-      def apply[X](w: Toy1Writer[X]): Eff[U, X] = {
-        val (cmd, v) = w.run
-        tell[U, Cmd](Toy1Cmd(cmd)).as(v)
-      }
-    })
-
-    def runWriterToy2[U](implicit
-      m: Member.Aux[Toy2Writer, R, U],
-      writer: CmdWriter |= U
-    ): Eff[U, A] = translate(effects)(new Translate[Toy2Writer, U] {
-      def apply[X](w: Toy2Writer[X]): Eff[U, X] = {
-        val (cmd, v) = w.run
-        tell[U, Cmd](Toy2Cmd(cmd)).as(v)
-      }
-    })
-
-    def runWriterToy3[U](implicit
-      m: Member.Aux[Toy3Writer, R, U],
-      writer: CmdWriter |= U
-    ): Eff[U, A] = translate(effects)(new Translate[Toy3Writer, U] {
-      def apply[X](w: Toy3Writer[X]): Eff[U, X] = {
-        println(w)
-        val (cmd, v) = w.run
-        tell[U, Cmd](Toy3Cmd(cmd)).as(v)
-      }
-    })
-
     def runToy1[U](implicit
       m: Member.Aux[Toy1, R, U],
       writer: _toy1Writer[U],
@@ -78,18 +40,17 @@ object CombinedInterpreter {
 
   }
 
-  type Stack = Fx.fx10[CmdWriter, Toy1Writer, Toy2Writer, Toy3Writer, StateToy3, Toy1, Toy2, Toy3, WriterLog, Option]
-  def run[A](effects: Eff[Stack, A]): (Option[A], List[Cmd]) = {
+  type Stack = Fx.fx9[Toy1Writer, Toy2Writer, Toy3Writer, StateToy3, Toy1, Toy2, Toy3, WriterLog, Option]
+  def run[A](effects: Eff[Stack, A]): Option[A] = {
     effects
       .runToy1
-      .runWriterToy1
+      .runWriterNoLog[Toy1[Any]]
       .runToy2
-      .runWriterToy2
+      .runWriterNoLog[Toy2[Any]]
       .runToy3
-      .runWriterToy3
+      .runWriterNoLog[Toy3[Any]]
       .runOption
       .evalState(ToyState(2))
-      .runWriter[Cmd]
       .runWriterNoLog[Log]
       .run
   }
