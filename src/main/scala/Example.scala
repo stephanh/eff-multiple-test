@@ -1,3 +1,9 @@
+object Example0 {
+  def main(args: Array[String]): Unit = {
+    CombinedInterpreter.runC0
+  }
+}
+
 object Example1 {
   def main(args: Array[String]): Unit = {
     CombinedInterpreter.run1

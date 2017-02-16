@@ -39,9 +39,34 @@ object CombinedInterpreter {
 
   }
 
+  type StackC0 = Fx.fx8[Toy1Writer, Toy2Writer, Toy3Writer, Toy1, Toy2, Toy3, WriterLog, Option]
+  def runC0 = {
+    val effC0 = for {
+      _ <- Toy3.doing[StackC0]("3a")
+      _ <- Toy3.doing[StackC0]("3b")
+      _ <- Toy2.doing[StackC0]("2a")
+     // _ <- Toy1.doing[Stack0]("1a")
+    } yield ()
+
+    effC0
+      .runToy1
+      .runWriterNoLog[Toy1[Any]]
+      .runToy2
+      .runWriterNoLog[Toy2[Any]]
+      .runToy3
+      .runWriterNoLog[Toy3[Any]]
+      //.evalState(ToyState(2))
+      .runWriterNoLog[Log]
+      .runOption
+      //.runOption
+      .run
+  }
+
+
+
   // Doesn't work scala.MatchError: 0 (of class java.lang.Integer)
-  type Stack1 = Fx.fx4[Option, Toy1, Toy1Writer, WriterLog]
-  val eff1 = tell[Stack1, Log](Log("test"))
+  type StackM1 = Fx.fx4[Option, Toy1, Toy1Writer, WriterLog]
+  val eff1 = tell[StackM1, Log](Log("test"))
 
   def run1 = {
     eff1
@@ -53,7 +78,7 @@ object CombinedInterpreter {
   }
 
   //Works
-  val eff2 = pure[Stack1, String]("")
+  val eff2 = pure[StackM1, String]("")
 
   def run2 = {
     eff2
