@@ -78,7 +78,7 @@ object CombinedInterpreter {
 
   }
 
-  type Stack = Fx.fx12[CmdWriter, Toy1Writer, Toy2Writer, Toy3Writer, StateToy1, StateToy2, StateToy3, Toy1, Toy2, Toy3, WriterLog, Option]
+  type Stack = Fx.fx10[CmdWriter, Toy1Writer, Toy2Writer, Toy3Writer, StateToy3, Toy1, Toy2, Toy3, WriterLog, Option]
   def run[A](effects: Eff[Stack, A]): (Option[A], List[Cmd]) = {
     effects
       .runToy1
@@ -88,8 +88,6 @@ object CombinedInterpreter {
       .runToy3
       .runWriterToy3
       .runOption
-      .evalState(Map.empty[String, Any])
-      .evalState(Map.empty[String, String])
       .evalState(ToyState(2))
       .runWriter[Cmd]
       .runWriterNoLog[Log]
