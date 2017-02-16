@@ -24,8 +24,7 @@ object CombinedInterpreter {
   implicit class Ops[R, A](effects: Eff[R, A]) {
     def runToy1[U](implicit
       m: Member.Aux[Toy1, R, U],
-      writer: _toy1Writer[U],
-      option: _option[U]
+      writer: _toy1Writer[U]
     ): Eff[U, A] = Toy1Interpreter.runToy1(effects)
 
     def runToy2[U](implicit
@@ -41,7 +40,7 @@ object CombinedInterpreter {
   }
 
   type Stack = Fx.fx9[Toy1Writer, Toy2Writer, Toy3Writer, StateToy3, Toy1, Toy2, Toy3, WriterLog, Option]
-  def run[A](effects: Eff[Stack, A]): Option[A] = {
+  def run[A](effects: Eff[Stack, A]) = {
     effects
       .runToy1
       .runWriterNoLog[Toy1[Any]]
@@ -49,9 +48,9 @@ object CombinedInterpreter {
       .runWriterNoLog[Toy2[Any]]
       .runToy3
       .runWriterNoLog[Toy3[Any]]
-      .runOption
       .evalState(ToyState(2))
       .runWriterNoLog[Log]
+      .runOption
       .run
   }
 }

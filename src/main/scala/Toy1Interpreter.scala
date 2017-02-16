@@ -11,12 +11,12 @@ object Toy1Interpreter {
   type _toy1Writer[R] = Toy1Writer |= R
 
 
-  def runToy1[R, U, A](effects: Eff[R, A])(implicit m: Member.Aux[Toy1, R, U], writer: _toy1Writer[U], option: _option[U]): Eff[U, A] =
+  def runToy1[R, U, A](effects: Eff[R, A])(implicit m: Member.Aux[Toy1, R, U], writer: _toy1Writer[U]): Eff[U, A] =
     translate(effects)(new Translate[Toy1, U]{
       def apply[T](cmd: Toy1[T]): Eff[U, T] = cmd match {
         case Doing1(v) => {
           tell[U, Toy1[Any]](cmd.asInstanceOf[Toy1[Any]]) >>
-          some("OK")
+          pure("OK")
         }
       }
     })
